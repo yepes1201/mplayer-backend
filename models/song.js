@@ -13,15 +13,22 @@ const SongSchema = Schema({
     type: String,
     required: [true, "Source URL is required"],
   },
-  imgURL: {
+  img: {
     type: String,
-    required: [true, "Image URL is required"],
+  },
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: [true, "User ID is required"],
   },
 });
 
 SongSchema.methods.toJSON = function () {
-  const { __v, ...song } = this.toObject();
-  return song;
+  const { __v, _id, ...song } = this.toObject();
+  return {
+    sid: _id,
+    ...song,
+  };
 };
 
 module.exports = model("Song", SongSchema);

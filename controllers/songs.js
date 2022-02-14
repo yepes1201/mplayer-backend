@@ -10,7 +10,7 @@ const songsGet = async (req = request, res = response) => {
     songsArrId.map(async (id) => await Song.findOne({ _id: id }))
   );
 
-  res.json(songs);
+  res.json({ songs });
 };
 
 const songsPost = async (req = request, res = response) => {
@@ -27,7 +27,7 @@ const songsPost = async (req = request, res = response) => {
   // Save to DB
   await song.save();
 
-  res.json(song);
+  res.json({ song });
 };
 
 const songsDelete = async (req = request, res = response) => {
@@ -36,7 +36,7 @@ const songsDelete = async (req = request, res = response) => {
   // Delete song from DB
   const song = await Song.findByIdAndDelete(id);
 
-  res.json(song);
+  res.json({ song });
 };
 
 const songsPut = async (req = request, res = response) => {

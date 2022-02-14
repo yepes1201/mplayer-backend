@@ -1,15 +1,18 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+
 const { dbConnection } = require("../db/config");
 
 class Server {
   constructor() {
     this.app = express();
     this.port = process.env.PORT;
-    this.songsRoute = "/api/songs";
-    this.usersRoute = "/api/users";
-    this.authRoute = "/api/auth";
+    this.paths = {
+      auth: "/api/auth",
+      users: "/api/users",
+      songs: "/api/songs",
+    };
 
     // DB Connection
     this.connectDb();
@@ -34,9 +37,9 @@ class Server {
   }
 
   routes() {
-    this.app.use(this.songsRoute, require("../routes/songs"));
-    // this.app.use(this.usersRoute, require("../routes/songs"));
-    // this.app.use(this.authRoute, require("../routes/songs"));
+    this.app.use(this.paths.auth, require("../routes/auth"));
+    this.app.use(this.paths.songs, require("../routes/songs"));
+    // this.app.use(this.paths.users, require("../routes/users"));
   }
 
   listen() {

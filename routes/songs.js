@@ -3,7 +3,7 @@ const { Router } = require("express");
 const { check } = require("express-validator");
 const { validateForm } = require("../middlewares/validate-form");
 
-const { songExist } = require("../helpers/db-validation");
+const { songExist, userIDExists } = require("../helpers/db-validation");
 
 const {
   songsGet,
@@ -16,17 +16,25 @@ const router = Router();
 
 router.get(
   "/",
-  [check("songsArrId", "Please send a list of IDs").isArray(), validateForm],
+  [
+    check("id", "Please provide user id").isMongoId(),
+    check("id").custom(userIDExists),
+    validateForm,
+  ],
   songsGet
 );
 
 router.post(
   "/",
   [
-    check("name", "Please type the name of the song").not().isEmpty(),
-    check("artist", "Please type the artist of the song").not().isEmpty(),
-    check("srcURL", "Please type the audio url of the song").not().isEmpty(),
-    check("imgURL", "Please type the image url of the song").not().isEmpty(),
+    check("name", "Please type the name of the song").notEmpty(),
+    check("artist", "Please type the artist of the song").notEmpty(),
+    check(
+      "user",
+      "Please type the user id that is creating the song"
+    ).notEmpty(),
+    check("user", "User ID is not valid").isMongoId(),
+    check("user").custom(userIDExists),
     validateForm,
   ],
   songsPost
