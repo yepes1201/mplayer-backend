@@ -20,9 +20,13 @@ const register = async (req = request, res = response) => {
     // Save user to database
     await user.save();
 
+    // Generate Token
+    const token = await generateJWT(user.id);
+
     res.status(201).json({
       msg: "User created",
       user,
+      token,
     });
   } catch (err) {
     console.log(err);
