@@ -1,7 +1,7 @@
 const { Schema, model } = require("mongoose");
 
 const SongSchema = Schema({
-  name: {
+  title: {
     type: String,
     required: [true, "Name is required"],
   },

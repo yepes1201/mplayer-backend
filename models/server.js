@@ -11,7 +11,6 @@ class Server {
     this.port = process.env.PORT;
     this.paths = {
       auth: "/api/auth",
-      uploads: "/api/uploads",
       users: "/api/users",
       songs: "/api/songs",
     };
@@ -32,7 +31,7 @@ class Server {
 
   middlewares() {
     // CORS Settings
-    this.app.use(cors());
+    this.app.use(cors({ origin: true }));
 
     // Body parser
     this.app.use(express.json());

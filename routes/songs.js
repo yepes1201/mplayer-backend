@@ -16,9 +16,9 @@ const {
 const router = Router();
 
 router.get(
-  "/",
+  "/:id",
   [
-    validateJWT,
+    // validateJWT,
     check("id", "Please provide user id").isMongoId(),
     check("id").custom(userIDExists),
     validateForm,
@@ -30,8 +30,8 @@ router.post(
   "/",
   [
     validateJWT,
-    check("name", "Please type the name of the song").notEmpty(),
-    check("artist", "Please type the artist of the song").notEmpty(),
+    check("title", "Please type the song's title").notEmpty(),
+    check("artist", "Please type the song's artist").notEmpty(),
     check(
       "user",
       "Please type the user id that is creating the song"
@@ -56,6 +56,7 @@ router.put(
 router.delete(
   "/:id",
   [
+    validateJWT,
     check("id", "ID doesn't exist").isMongoId(),
     check("id").custom(songExist),
     validateForm,

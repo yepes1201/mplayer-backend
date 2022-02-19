@@ -1,9 +1,12 @@
+const cloudinary = require("cloudinary").v2;
+cloudinary.config(process.env.CLOUDINARY_URL);
 const { request, response } = require("express");
+const { validateFileExtension } = require("../helpers/file-validation");
 const Song = require("../models/song");
 
 const songsGet = async (req = request, res = response) => {
-  // Get array of songs ID
-  const { id } = req.body;
+  // Get user ID
+  const { id } = req.params;
 
   // Get songs from DB
   const songs = await Song.find({ user: id });
@@ -12,19 +15,64 @@ const songsGet = async (req = request, res = response) => {
 };
 
 const songsPost = async (req = request, res = response) => {
-  const { name, artist, user } = req.body;
+  const { title, artist, user } = req.body;
+  const { src, img } = req.files;
 
-  // Create Song
-  const song = new Song({
-    name,
-    artist,
-    user,
-  });
+  // Verify if audio file exists
+  if (!src) {
+    return res.status(400).json({
+      msg: "Please provide the audio file",
+    });
+  }
 
-  // Save Song in DB
-  await song.save();
+  // Validate audio file extension
+  if (!validateFileExtension(src)) {
+    return res.status(400).json({
+      msg: "Audio file extension not valid",
+    });
+  }
 
-  res.json({ song });
+  try {
+    let imgUrl;
+    // Verify if image file exists
+    if (img) {
+      // Validate image file extension
+      if (!validateFileExtension(img, false)) {
+        return res.status(400).json({
+          msg: "Image file extension not valid",
+        });
+      }
+      // Upload image file
+      const { secure_url } = await cloudinary.uploader.upload(img.tempFilePath);
+      imgUrl = secure_url;
+    }
+
+    // Upload audio file
+    let srcUrl;
+    const { secure_url } = await cloudinary.uploader.upload(src.tempFilePath, {
+      resource_type: "video",
+    });
+    srcUrl = secure_url;
+
+    // Instance Song
+    const song = new Song({
+      title,
+      artist,
+      src: srcUrl,
+      img: imgUrl,
+      user,
+    });
+
+    // Save Song in DB
+    await song.save();
+
+    res.json({ song });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      msg: "Server error. Please try again",
+    });
+  }
 };
 
 const songsDelete = async (req = request, res = response) => {
