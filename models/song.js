@@ -9,9 +9,8 @@ const SongSchema = Schema({
     type: String,
     required: [true, "Artist is required"],
   },
-  srcURL: {
+  src: {
     type: String,
-    required: [true, "Source URL is required"],
   },
   img: {
     type: String,

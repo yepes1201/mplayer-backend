@@ -14,7 +14,7 @@ const validateJWT = async (req = request, res = response, next) => {
 
   try {
     // Get payload from token
-    const { uid } = jwt.verify(token, process.env.SECRETORPUBLICKEY);
+    const { uid } = jwt.verify(token, process.env.SECRETORPRIVATEKEY);
 
     // Get user from id
     const user = await User.findById(uid);
@@ -31,7 +31,11 @@ const validateJWT = async (req = request, res = response, next) => {
   } catch (err) {
     console.log(err);
     return res.status(500).json({
-      msg: "Server error. Please try again later.",
+      msg: "Invalid Token.",
     });
   }
+};
+
+module.exports = {
+  validateJWT,
 };

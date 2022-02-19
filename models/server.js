@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const fileUpload = require("express-fileupload");
 
 const { dbConnection } = require("../db/config");
 
@@ -10,6 +11,7 @@ class Server {
     this.port = process.env.PORT;
     this.paths = {
       auth: "/api/auth",
+      uploads: "/api/uploads",
       users: "/api/users",
       songs: "/api/songs",
     };
@@ -34,6 +36,14 @@ class Server {
 
     // Body parser
     this.app.use(express.json());
+
+    // File Upload
+    this.app.use(
+      fileUpload({
+        useTempFiles: true,
+        tempFileDir: "/tmp/",
+      })
+    );
   }
 
   routes() {

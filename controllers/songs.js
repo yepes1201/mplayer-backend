@@ -3,28 +3,25 @@ const Song = require("../models/song");
 
 const songsGet = async (req = request, res = response) => {
   // Get array of songs ID
-  const { songsArrId } = req.body;
+  const { id } = req.body;
 
   // Get songs from DB
-  const songs = await Promise.all(
-    songsArrId.map(async (id) => await Song.findOne({ _id: id }))
-  );
+  const songs = await Song.find({ user: id });
 
   res.json({ songs });
 };
 
 const songsPost = async (req = request, res = response) => {
-  const { name, artist, imgURL, srcURL } = req.body;
+  const { name, artist, user } = req.body;
 
-  // Create new Song
+  // Create Song
   const song = new Song({
     name,
     artist,
-    imgURL,
-    srcURL,
+    user,
   });
 
-  // Save to DB
+  // Save Song in DB
   await song.save();
 
   res.json({ song });

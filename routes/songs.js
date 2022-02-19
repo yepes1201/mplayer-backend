@@ -1,7 +1,8 @@
 const { Router } = require("express");
-
 const { check } = require("express-validator");
+
 const { validateForm } = require("../middlewares/validate-form");
+const { validateJWT } = require("../middlewares/validate-jwt");
 
 const { songExist, userIDExists } = require("../helpers/db-validation");
 
@@ -17,6 +18,7 @@ const router = Router();
 router.get(
   "/",
   [
+    validateJWT,
     check("id", "Please provide user id").isMongoId(),
     check("id").custom(userIDExists),
     validateForm,
@@ -27,6 +29,7 @@ router.get(
 router.post(
   "/",
   [
+    validateJWT,
     check("name", "Please type the name of the song").notEmpty(),
     check("artist", "Please type the artist of the song").notEmpty(),
     check(
