@@ -72,7 +72,14 @@ const login = async (req = request, res = response) => {
   }
 };
 
+const tokenLogin = (req = request, res = response) => {
+  res.json({
+    user: req.user,
+  });
+};
+
 module.exports = {
   register,
+  tokenLogin,
   login,
 };
