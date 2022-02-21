@@ -6,7 +6,12 @@ const { emailExists } = require("../helpers/db-validation");
 const { validateForm } = require("../middlewares/validate-form");
 const { validateJWT } = require("../middlewares/validate-jwt");
 
-const { register, login, tokenLogin } = require("../controllers/auth");
+const {
+  register,
+  login,
+  tokenLogin,
+  resetPassword,
+} = require("../controllers/auth");
 
 const router = Router();
 
@@ -30,6 +35,12 @@ router.post(
     validateForm,
   ],
   login
+);
+
+router.post(
+  "/resetpassword",
+  [check("email", "Email is required").isEmail()],
+  resetPassword
 );
 
 router.post("/token", validateJWT, tokenLogin);
