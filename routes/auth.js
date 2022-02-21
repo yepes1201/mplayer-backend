@@ -2,7 +2,7 @@ const { Router } = require("express");
 
 const { check } = require("express-validator");
 
-const { emailExists } = require("../helpers/db-validation");
+const { emailExists, userIDExists } = require("../helpers/db-validation");
 const { validateForm } = require("../middlewares/validate-form");
 const { validateJWT } = require("../middlewares/validate-jwt");
 
@@ -11,6 +11,7 @@ const {
   login,
   tokenLogin,
   resetPassword,
+  confirmResetPassword,
 } = require("../controllers/auth");
 
 const router = Router();
@@ -41,6 +42,18 @@ router.post(
   "/resetpassword",
   [check("email", "Email is required").isEmail()],
   resetPassword
+);
+
+router.post(
+  "/confirm-resetpassword",
+  [
+    check("userId").isMongoId(),
+    check("userId").custom(userIDExists),
+    check("password").notEmpty(),
+    check("token").notEmpty(),
+    validateForm,
+  ],
+  confirmResetPassword
 );
 
 router.post("/token", validateJWT, tokenLogin);

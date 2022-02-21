@@ -7,6 +7,7 @@ const Token = require("../models/token");
 
 const { generateJWT } = require("../helpers/generate-jwt");
 const { sendEmail } = require("../helpers/reset-password");
+const user = require("../models/user");
 
 // * Register
 const register = async (req = request, res = response) => {
@@ -82,12 +83,14 @@ const login = async (req = request, res = response) => {
 // * Password Reset
 const resetPassword = async (req = request, res = response) => {
   const { email } = req.body;
+  console.log(email);
 
   // Validate if user exists
   const user = await User.findOne({ email });
   if (!user) {
     return res.status(400).json({
-      msg: `User with email ${email} doesn't exists`,
+      msg: `User with email '${email}' doesn't exists`,
+      ok: false,
     });
   }
 
@@ -100,21 +103,75 @@ const resetPassword = async (req = request, res = response) => {
   const salt = bcrypt.genSaltSync();
   const hashedToken = bcrypt.hashSync(resetToken, salt);
 
-  // Save token in database
-  await new Token({
-    user: user.id,
-    token: hashedToken,
-    createdAt: Date.now(),
-  }).save();
+  try {
+    // Save token in database
+    await new Token({
+      user: user.id,
+      token: hashedToken,
+      createdAt: Date.now(),
+    }).save();
 
-  // Send email to the user requesting password reset
-  const link = `${process.env.APP_URL}/passwordreset?token=${resetToken}&id=${user.id}`;
-  sendEmail(email, "Password Reset", { name: user.name, link });
+    // Send email to the user requesting password reset
+    const link = `${process.env.APP_URL}/auth/passwordreset?token=${resetToken}&id=${user.id}`;
+    sendEmail(email, "Password Reset", { name: user.name, link });
 
-  res.status(201).json({
-    msg: "Email sended",
-    ok: true,
-  });
+    res.status(201).json({
+      msg: `Email sent to '${email}'. Please check your inbox.`,
+      ok: true,
+    });
+  } catch (err) {
+    res.status(500).json({
+      msg: "Something went wrong. Please try again later.",
+      ok: false,
+    });
+  }
+};
+
+// * Confirm Reset Password
+const confirmResetPassword = async (req = request, res = response) => {
+  const { userId, token, password } = req.body;
+
+  // Verify if token exists in database
+  const passwordResetToken = await Token.findOne({ user: userId });
+  if (!passwordResetToken) {
+    return res.status(401).json({
+      ok: false,
+      msg: "Invalid or expired password reset token.",
+    });
+  }
+
+  // Verify if token is valid
+  const isValid = bcrypt.compareSync(token, passwordResetToken.token);
+  if (!isValid) {
+    return res.status(401).json({
+      ok: false,
+      msg: "Invalid or expired password reset token.",
+    });
+  }
+
+  // Hash new password
+  const salt = bcrypt.genSaltSync();
+  const hashedPassword = bcrypt.hashSync(password, salt);
+
+  // Update Password
+  try {
+    const user = await User.findByIdAndUpdate(userId, {
+      password: hashedPassword,
+    });
+    await passwordResetToken.deleteOne();
+    const loginToken = await generateJWT(user.id);
+    res.status(201).json({
+      ok: true,
+      msg: "Password reseted successfully",
+      user,
+      loginToken,
+    });
+  } catch (err) {
+    res.status(500).json({
+      ok: false,
+      msg: "Something went wrong. Please try again later.",
+    });
+  }
 };
 
 // * Token login
@@ -129,4 +186,5 @@ module.exports = {
   tokenLogin,
   login,
   resetPassword,
+  confirmResetPassword,
 };
