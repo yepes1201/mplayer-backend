@@ -34,7 +34,7 @@ class Server {
     this.app.use(cors({ origin: true }));
 
     // Body parser
-    this.app.use(express.json());
+    this.app.use(express.json({ limit: "100mb" }));
 
     // File Upload
     this.app.use(

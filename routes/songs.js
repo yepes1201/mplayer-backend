@@ -11,14 +11,17 @@ const {
   songsPost,
   songsDelete,
   songsPut,
+  songGet,
+  updateFavorites,
 } = require("../controllers/songs");
 
 const router = Router();
 
+// Get users songs
 router.get(
   "/:id",
   [
-    // validateJWT,
+    validateJWT,
     check("id", "Please provide user id").isMongoId(),
     check("id").custom(userIDExists),
     validateForm,
@@ -26,6 +29,19 @@ router.get(
   songsGet
 );
 
+// Get song by id
+router.get(
+  "/song/:id",
+  [
+    validateJWT,
+    check("id", "Please provide song id").isMongoId(),
+    check("id").custom(songExist),
+    validateForm,
+  ],
+  songGet
+);
+
+// Create Song
 router.post(
   "/",
   [
@@ -43,6 +59,7 @@ router.post(
   songsPost
 );
 
+// Update Song
 router.put(
   "/:id",
   [
@@ -53,6 +70,7 @@ router.put(
   songsPut
 );
 
+// Delete Song
 router.delete(
   "/:id",
   [
@@ -62,6 +80,19 @@ router.delete(
     validateForm,
   ],
   songsDelete
+);
+
+// Update Favorites Songs list
+router.put(
+  "/favorites/:id",
+  [
+    validateJWT,
+    check("id", "Please provide user id").notEmpty(),
+    check("id").isMongoId(),
+    check("id").custom(userIDExists),
+    validateForm,
+  ],
+  updateFavorites
 );
 
 module.exports = router;
